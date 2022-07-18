@@ -1,7 +1,7 @@
 # Code Challenge
 
 
-# The two main algorithms are implemented on DistanceCalculator class
+## The two main algorithms are implemented on DistanceCalculator class
 
 The project follows a simple MVVM architecture and focuses on creating a basic UI to support its features:
 
