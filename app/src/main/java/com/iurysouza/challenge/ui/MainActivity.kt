@@ -1,11 +1,14 @@
-package com.iurysouza.challenge
+package com.iurysouza.challenge.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
@@ -17,9 +20,6 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.iurysouza.challenge.resource.ResourceLoader
-import com.iurysouza.challenge.ui.CountryViewModel
-import com.iurysouza.challenge.ui.DistanceCalculatorImpl
-import com.iurysouza.challenge.ui.MarkerItem
 
 class MainActivity : ComponentActivity() {
 
@@ -32,16 +32,34 @@ class MainActivity : ComponentActivity() {
             LaunchedEffect(Unit) { viewModel.loadNewStuff() }
 
             val countryListState = viewModel.countryList.collectAsState().value
+            val showCalculateResult = viewModel.showCalculateResult.collectAsState().value
+            val idealRoute = viewModel.idealRoute.collectAsState().value
 
-            val startPosition = LatLng(51.0, 9.0)
+            val startPosition = LatLng(51.0, 9.0) // Berlin
             val cameraPositionState = rememberCameraPositionState {
                 position = CameraPosition.fromLatLngZoom(startPosition, 10f)
             }
 
             Column(Modifier.fillMaxWidth()) {
-                countryListState.find { it.isSelected }?.let {
-                    MarkerItem(it.name, it.capital, it.homeDistance, it.isHome) {
-                        viewModel.onHomeClicked()
+                Row(Modifier.fillMaxWidth()) {
+                    countryListState.find { it.isSelected }?.let {
+                        CountryDetail(it.name,
+                            it.capital,
+                            it.homeDistance,
+                            it.isHome,
+                            it.addedToTrip,
+                            onAddToTrip = { isOn -> viewModel.onAddToRoute(isOn) },
+                            onSwitchHome = { viewModel.onHomeClicked() }
+                        )
+                    }
+                    Column() {
+                        if (idealRoute.isNotEmpty()) {
+                            Text(text = "Ideal $idealRoute")
+                        }
+                        if (showCalculateResult)
+                            Button(onClick = { viewModel.onCalculateRoute() }) {
+                                Text(text = "Calculate Route")
+                            }
                     }
                 }
                 GoogleMap(

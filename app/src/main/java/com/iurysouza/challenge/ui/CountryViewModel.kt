@@ -13,23 +13,25 @@ import kotlinx.coroutines.launch
 class CountryViewModel(
     private val resourceLoader: ResourceLoader,
     private val gson: Gson,
-    val calculator: DistanceCalculatorImpl,
+    private val calculator: DistanceCalculatorImpl,
 ) :
     ViewModel() {
 
-    val home: MutableStateFlow<CountryViewItem?> = MutableStateFlow(null)
+    val showCalculateResult: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val idealRoute: MutableStateFlow<String> = MutableStateFlow("")
     val countryList: MutableStateFlow<List<CountryViewItem>> = MutableStateFlow(emptyList())
 
     suspend fun loadNewStuff() {
         viewModelScope.launch {
             countryList.emit(loadCountryList().map {
-                CountryViewItem(it.name,
+                CountryViewItem(
+                    it.name,
                     it.capital,
                     it.latlng[0],
                     it.latlng[1],
-                    isSelected = false,
+                    homeDistance = null,
                     isHome = false,
-                    homeDistance = null
+                    isSelected = false,
                 )
             })
         }
@@ -61,6 +63,49 @@ class CountryViewModel(
                 selectedCountry.lng
             )
             DecimalFormat("#.##").format(distanceFromHome) + " km"
+        }
+    }
+
+    fun onCalculateRoute() {
+        viewModelScope.launch {
+            val routeData = mutableListOf<Triple<String, String, Double>>()
+            val route = countryList.value.filter { it.addedToTrip }
+            route.forEach { startPoint ->
+                val otherCities = route.minus(startPoint)
+                otherCities.forEach { destination ->
+                    routeData.add(
+                        Triple(
+                            startPoint.name,
+                            destination.name,
+                            calculator.distance(
+                                startPoint.lat,
+                                startPoint.lng,
+                                destination.lat,
+                                destination.lng
+                            )
+                        )
+                    )
+                }
+            }
+            val result = calculator.travelingSalesman(routeData)
+            val message = "Ideal route is ${result?.visited()} in ${result?.distance()} km"
+            idealRoute.emit(message)
+        }
+    }
+
+    fun onAddToRoute(addToTrip: Boolean) {
+        val countries = countryList.value
+
+        viewModelScope.launch {
+            idealRoute.emit("") //clean result
+            if (!addToTrip || countries.filter { it.addedToTrip }.size < 4) {
+                val newList = countries.map {
+                    if (it.isSelected) it.copy(addedToTrip = addToTrip) else it
+                }
+                countryList.emit(newList)
+
+                showCalculateResult.emit(newList.isNotEmpty())
+            }
         }
     }
 

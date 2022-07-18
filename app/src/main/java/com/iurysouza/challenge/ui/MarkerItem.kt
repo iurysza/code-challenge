@@ -24,11 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MarkerItem(
+fun CountryDetail(
     title: String,
     body: String,
     homeDistance: String?,
     isHome: Boolean,
+    addedToRoute: Boolean,
+    onAddToTrip: (Boolean) -> Unit = {},
     onSwitchHome: (Boolean) -> Unit = {},
 ) {
     Card(
@@ -53,6 +55,10 @@ fun MarkerItem(
             }
             if (!isHome && !homeDistance.isNullOrEmpty()) {
                 Text("Home distance is: $homeDistance")
+            }
+            Row() {
+                Text("Add to Trip:")
+                Switch(checked = addedToRoute, onCheckedChange = onAddToTrip)
             }
         }
     }
