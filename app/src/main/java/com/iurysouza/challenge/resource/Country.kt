@@ -1,9 +1,9 @@
-package com.iurysouza.challenge
+package com.iurysouza.challenge.resource
 
 data class Country(
     val capital: String,
-    val country_code: String,
-    val latlng: List<Double>,
     val name: String,
+    val latlng: List<Double>,
+    val country_code: String,
     val timezones: List<String>
 )
