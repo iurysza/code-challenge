@@ -12,7 +12,7 @@ The project follows a simple MVVM architecture and focuses on creating a basic U
 by pressing the calculate route button.
 
 [apk](./assets/app-debug.apk)
-![demo-video](./assets/demo-video.mp4)
+![demo-video](./assets/Kapture 2022-07-18 at 21.11.36.mp4)
 
 ## Tests
 Due to time constraints, the tests were not added.
